@@ -64,5 +64,4 @@ async def delete_short_url(short_url: AnyUrl, url_dal: UrlDAL = Depends(get_url_
 @additional_router.get("/", response_model=list[Url])
 async def get_urls(skip: int = 0, limit: int = 100, url_dal: UrlDAL = Depends(get_url_dal)):
     result = await url_dal.get_all_urls(skip, limit)
-    print(result)
     return result
