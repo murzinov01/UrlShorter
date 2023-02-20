@@ -2,9 +2,8 @@ import uvicorn
 from fastapi import FastAPI
 
 from .db.config import Base, engine
-from .routers import urls
 from .enums import Tags
-
+from .routers import urls
 
 description = """
 UrlShorter API helps you generate short urls ans use them 🚀
@@ -44,7 +43,7 @@ app = FastAPI(
         "name": "Murzinov Michail",
         "email": "murzinov01@bk.ru",
     },
-    openapi_tags=tags_metadata
+    openapi_tags=tags_metadata,
 )
 
 

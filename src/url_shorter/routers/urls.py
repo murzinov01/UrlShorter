@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, Request, Body, Path, status
+from fastapi import APIRouter, Body, Depends, Path, Request, Response, status
 from fastapi.exceptions import HTTPException
 from pydantic import AnyUrl
 
@@ -13,15 +13,13 @@ router = APIRouter(prefix="/urls", tags=[Tags.urls])
 additional_router = APIRouter(tags=[Tags.additional])
 
 
-@router.post("/", response_model=UrlShort, status_code=status.HTTP_200_OK, description="Generate short url based on full url")
+@router.post(
+    "/", response_model=UrlShort, status_code=status.HTTP_200_OK, description="Generate short url based on full url"
+)
 async def create_short_url(
-        response: Response,
-        url_long: UrlLong = Body(
-            example={
-                "url": "https://habr.com/ru/all/"
-            }
-        ),
-        url_dal: UrlDAL = Depends(get_url_dal)
+    response: Response,
+    url_long: UrlLong = Body(example={"url": "https://habr.com/ru/all/"}),
+    url_dal: UrlDAL = Depends(get_url_dal),
 ):
     # check if short utl already exists
     if url_entry := await url_dal.get_short_utl(url_long.url):
@@ -40,8 +38,7 @@ async def create_short_url(
 
 @router.get("/{short_url:path}", response_model=UrlLong, description="Get full url by short link previously generated")
 async def get_full_url(
-        short_url: AnyUrl = Path(example="http://const.com/68d0"),
-        url_dal: UrlDAL = Depends(get_url_dal)
+    short_url: AnyUrl = Path(example="http://const.com/68d0"), url_dal: UrlDAL = Depends(get_url_dal)
 ):
     if url_entry := await url_dal.get_url(short_url):
         return url_entry
@@ -51,8 +48,7 @@ async def get_full_url(
 
 @router.delete("/{short_url:path}", status_code=status.HTTP_204_NO_CONTENT, description="Delete short url")
 async def delete_short_url(
-        short_url: AnyUrl = Path(example="http://const.com/68d0"),
-        url_dal: UrlDAL = Depends(get_url_dal)
+    short_url: AnyUrl = Path(example="http://const.com/68d0"), url_dal: UrlDAL = Depends(get_url_dal)
 ):
     if await url_dal.get_url(short_url):
         await url_dal.delete_url(short_url)
@@ -61,7 +57,9 @@ async def delete_short_url(
 
 
 # Additional Endpoint
-@additional_router.get("/urls/", response_model=list[Url], description="Get all urls (short and full) stored in the system")
+@additional_router.get(
+    "/urls/", response_model=list[Url], description="Get all urls (short and full) stored in the system"
+)
 async def get_urls(skip: int = 0, limit: int = 100, url_dal: UrlDAL = Depends(get_url_dal)):
     result = await url_dal.get_all_urls(skip, limit)
     return result
@@ -70,10 +68,7 @@ async def get_urls(skip: int = 0, limit: int = 100, url_dal: UrlDAL = Depends(ge
 # With Redirect
 @additional_router.get("/{token}", status_code=status.HTTP_302_FOUND)
 async def redirect(
-        request: Request,
-        response: Response,
-        token: str = Path(example="68d0"),
-        url_dal: UrlDAL = Depends(get_url_dal)
+    request: Request, response: Response, token: str = Path(example="68d0"), url_dal: UrlDAL = Depends(get_url_dal)
 ):
     """
     Redirect to long url based on short one.
@@ -87,7 +82,4 @@ async def redirect(
         response.status_code = status.HTTP_302_FOUND
         response.headers["Location"] = url_entry.url
     else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Short url does not exist"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Short url does not exist")
